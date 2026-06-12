@@ -50,6 +50,8 @@ export function buildReactCode(state: AlertState) {
     "        color: state.foreground,",
     "        fontFamily: state.fontFamily,",
     "        opacity: state.disabled ? 0.55 : 1,",
+    "        transition: state.motion ? \"opacity 0.2s ease, transform 0.2s ease\" : \"none\",",
+    "        transform: state.motion ? \"translateY(0)\" : undefined,",
     "      }}",
     "    >",
     "      <div style={{ display: \"grid\", gap: state.gap }}>",

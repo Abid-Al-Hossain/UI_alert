@@ -22,6 +22,8 @@ function shell(state: AlertState): CSSProperties {
     color: state.foreground,
     fontFamily: state.fontFamily,
     opacity: state.disabled ? 0.55 : 1,
+    transition: state.motion ? "opacity 0.2s ease, transform 0.2s ease" : "none",
+    transform: state.motion ? "translateY(0)" : undefined,
   };
 }
 
