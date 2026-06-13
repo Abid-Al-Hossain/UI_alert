@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import type { AlertState } from "../types";
+import { SYSTEM_FONTS } from "@/components/shared/typography/fontConstants";
 
 const severityTone: Record<string, { label: string; icon: string; fallback: string }> = {
   info: { label: "Information", icon: "i", fallback: "#38bdf8" },
@@ -10,20 +11,43 @@ const severityTone: Record<string, { label: string; icon: string; fallback: stri
   error: { label: "Error", icon: "!", fallback: "#fb7185" },
 };
 
+function resolveFont(state: { fontBucket: "system" | "google"; googleFontFamily: string; systemFontIdx: number }): string {
+  return state.fontBucket === "google"
+    ? `"${state.googleFontFamily}", sans-serif`
+    : (SYSTEM_FONTS[state.systemFontIdx]?.css ?? "inherit");
+}
+
+function buildShadow(state: { shadowEnabled: boolean; shadowX: number; shadowY: number; shadowBlur: number; shadowSpread: number; shadowColor: string; shadowOpacity: number }): string {
+  if (!state.shadowEnabled) return "none";
+  const hex = Math.round(state.shadowOpacity * 255).toString(16).padStart(2, "0");
+  return `${state.shadowX}px ${state.shadowY}px ${state.shadowBlur}px ${state.shadowSpread}px ${state.shadowColor}${hex}`;
+}
+
+function buildRadius(state: { radiusLinked: boolean; radius: number; radiusTL: number; radiusTR: number; radiusBR: number; radiusBL: number }): string {
+  return state.radiusLinked
+    ? `${state.radius}px`
+    : `${state.radiusTL}px ${state.radiusTR}px ${state.radiusBR}px ${state.radiusBL}px`;
+}
+
 function shell(state: AlertState): CSSProperties {
   return {
     width: state.width,
     minHeight: state.height,
     padding: state.padding,
-    borderRadius: state.radius,
-    border: `${state.borderWidth}px solid ${state.border}`,
-    boxShadow: `0 ${Math.round(state.shadow / 3)}px ${state.shadow}px rgba(0,0,0,.28)`,
+    borderRadius: buildRadius(state),
+    border: `${state.borderWidth}px ${state.borderStyle} ${state.border}`,
+    boxShadow: buildShadow(state),
     background: state.background,
     color: state.foreground,
-    fontFamily: state.fontFamily,
+    fontFamily: resolveFont(state),
+    fontStyle: state.fontStyle,
+    textTransform: state.textTransform,
+    textDecoration: state.textDecoration,
+    letterSpacing: `${state.letterSpacing}${state.letterSpacingUnit}`,
+    lineHeight: state.lineHeight,
     opacity: state.disabled ? 0.55 : 1,
-    transition: state.motion ? "opacity 0.2s ease, transform 0.2s ease" : "none",
-    transform: state.motion ? "translateY(0)" : undefined,
+    transition: state.transitionDuration > 0 ? "opacity 0.2s ease, transform 0.2s ease" : "none",
+    transform: state.transitionDuration > 0 ? "translateY(0)" : undefined,
   };
 }
 
@@ -36,7 +60,7 @@ export default function LivePreview({ state }: { state: AlertState }) {
 
   if (isDismissed) {
     return (
-      <div role="status" aria-live="polite" className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: state.border, color: state.muted, fontFamily: state.fontFamily }}>
+      <div role="status" aria-live="polite" className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: state.border, color: state.muted, fontFamily: resolveFont(state) }}>
         Alert dismissed in state preview.
       </div>
     );
